@@ -1,22 +1,20 @@
 """
 iTunes Feed Generator for Pelican.
 """
+from collections.abc import Iterable
 import logging
 import os
-from urllib.parse import urlparse
 
-from collections.abc import Iterable
-
-import mutagen
-import six
 from feedgenerator import Rss201rev2Feed
 from feedgenerator.django.utils.feedgenerator import rfc2822_date
 from jinja2 import Markup
+import mutagen
+import six
+
 from pelican import signals
 from pelican.generators import Generator
 from pelican.utils import set_date_tzinfo
 from pelican.writers import Writer
-
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +41,7 @@ SUPPORTED_MIME_TYPES = [
     "video/x-m4v",
     "application/pdf ",
 ]
+
 
 class PodcastFeed(Rss201rev2Feed):
     """Helper class which generates the XML based in the global settings"""
@@ -194,10 +193,7 @@ class iTunesWriter(Writer):
                 "link",
                 lambda calee, item, article: "{0}/{1}".format(calee.site_url, item.url),
             ],
-            [
-                "title",
-                lambda calee, item, article: Markup(item.title).striptags(),
-            ],
+            ["title", lambda calee, item, article: Markup(item.title).striptags(),],  # NOQA E231
             [
                 "itunes:summary",
                 lambda calee, item, article: item.description
@@ -316,7 +312,7 @@ class PodcastFeedGenerator(Generator):
         :param writer: A ``Pelican Writer`` instance.
         """
         writer = iTunesWriter(self.output_path, self.settings)
-        feed = writer.write_feed(self.episodes, self.context, self.feed_path)
+        writer.write_feed(self.episodes, self.context, self.feed_path)
 
 
 def get_generators(generators):

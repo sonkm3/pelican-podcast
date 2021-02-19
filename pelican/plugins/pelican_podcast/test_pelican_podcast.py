@@ -16,7 +16,7 @@ CUR_DIR = os.path.dirname(__file__)
 CONTENT_DIR = os.path.join(CUR_DIR, "content")
 
 SITEURL = "http://example.com/"
-PATH = 'testdata'
+PATH = "testdata"
 
 PODCAST_FEED_PATH = "feeds/podcasts.atom.xml"
 PODCAST_FEED_TITLE = "SITENAME"
@@ -121,8 +121,8 @@ class TestiTunesWriter(unittest.TestCase):
             podcast="http://example.com/audio/test.mp3",
             category=category,
             date=datetime.datetime.now(),
-            length='120',
-            duration='120',
+            length="120",
+            duration="120",
         )
 
         context = get_context(**self.settings)
