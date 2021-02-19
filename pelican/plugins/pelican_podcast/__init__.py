@@ -1,1 +1,1 @@
-from .pelican_podcast_feed import *  # NOQA
+from .pelican_podcast import *  # NOQA
