@@ -73,7 +73,7 @@ class PodcastFeed(Rss201rev2Feed):
                 args = args + (None,)
             element_name, _key, attr = args
             if _key in self.settings:
-                if not attr:
+                if attr is None:
                     handler.addQuickElement(element_name, self.settings[_key])
                 else:
                     handler.addQuickElement(
@@ -98,10 +98,7 @@ class PodcastFeed(Rss201rev2Feed):
         #    <itunes:name>John Doe</itunes:name>
         #    <itunes:email>john.doe@example.com</itunes:email>
         #  </itunes:owner>
-        if (
-            "PODCAST_FEED_OWNER_NAME" in self.settings
-            and "PODCAST_FEED_OWNER_EMAIL" in self.settings
-        ):
+        if "PODCAST_FEED_OWNER_NAME" and "PODCAST_FEED_OWNER_EMAIL" in self.settings:
             handler.startElement("itunes:owner", {})
             handler.addQuickElement(
                 "itunes:name", self.settings["PODCAST_FEED_OWNER_NAME"]
@@ -116,15 +113,24 @@ class PodcastFeed(Rss201rev2Feed):
         #   <itunes:category text="Gadgets"/>
         #  </itunes:category>
         if "PODCAST_FEED_CATEGORY" in self.settings:
+            def category_element(categories, is_top=True):
+                if isinstance(categories, str):
+                    return handler.addQuickElement("itunes:category", attrs={"text": categories})
+                elif isinstance(categories, Iterable):
+                    if len(categories) <= 0:
+                        return
+                    category = categories.pop(0)
+                    if is_top and len(categories) > 0:
+                        handler.startElement("itunes:category", attrs={"text": category})
+                        _ = category_element(categories, is_top=False)
+                        handler.endElement("itunes:category")
+                    else:
+                        handler.addQuickElement("itunes:category", attrs={"text": category})
+                        _ = category_element(categories, is_top=False)
+
             categories = self.settings["PODCAST_FEED_CATEGORY"]
-            if isinstance(categories, Iterable):
-                handler.startElement("itunes:category", attrs={"text": categories[0]})
-                handler.addQuickElement(
-                    "itunes:category", attrs={"text": categories[1]}
-                )
-                handler.endElement("itunes:category")
-            else:
-                handler.addQuickElement("itunes:category", attrs={"text": categories})
+            category_element(categories)
+
 
     def add_item_elements(self, handler, item):
         """Adds a new element to the iTunes feed, using information from
