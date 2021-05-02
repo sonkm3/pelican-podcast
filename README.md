@@ -1,7 +1,7 @@
 Podcast: A Plugin for Pelican
 ====================================================
 
-[![Build Status](https://img.shields.io/github/workflow/status/pelican-plugins/pelican-podcast/build)](https://github.com/sonkm3/pelican-podcast/actions)
+[![Build Status](https://img.shields.io/github/workflow/status/sonkm3/pelican-podcast/Python%20package)](https://github.com/sonkm3/pelican-podcast/actions)
 [![PyPI Version](https://img.shields.io/pypi/v/pelican-podcast)](https://pypi.org/project/pelican-podcast/)
 ![License](https://img.shields.io/pypi/l/pelican-podcast?color=blue)
 
