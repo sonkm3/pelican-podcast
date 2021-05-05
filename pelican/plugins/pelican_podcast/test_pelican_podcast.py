@@ -20,13 +20,13 @@ PATH = "testdata"
 
 PODCAST_FEED_PATH = "feeds/podcasts.atom.xml"
 PODCAST_FEED_TITLE = "SITENAME"
-PODCAST_FEED_EXPLICIT = "No"
-PODCAST_FEED_LANGUAGE = "ja"
-PODCAST_FEED_COPYRIGHT = "COPYRIGHT STRING"
-PODCAST_FEED_SUBTITLE = "SUBTITLE STRING"
-PODCAST_FEED_AUTHOR = "AUTHOR STRING"
-PODCAST_FEED_SUMMARY = "SUMMERY STRING"
-PODCAST_FEED_IMAGE = SITEURL + "/images/common/artwork.jpg"
+PODCAST_FEED_EXPLICIT = "No"  # todo:
+PODCAST_FEED_LANGUAGE = "ja"  # todo:
+PODCAST_FEED_COPYRIGHT = "COPYRIGHT STRING"  #todo:
+PODCAST_FEED_SUBTITLE = "SUBTITLE STRING"  #todo:
+PODCAST_FEED_AUTHOR = "AUTHOR STRING"  # todo:
+PODCAST_FEED_SUMMARY = "SUMMERY STRING"  # todo:
+PODCAST_FEED_IMAGE = SITEURL + "/images/common/artwork.jpg"  # todo:
 PODCAST_FEED_OWNER_NAME = "OWNER STRING"
 PODCAST_FEED_OWNER_EMAIL = "example@example.com"
 PODCAST_FEED_CATEGORY = ["Leisure", "Hobbies"]
@@ -100,10 +100,16 @@ class TestiTunesWriter(unittest.TestCase):
 
         settings = {}
         settings["CACHE_CONTENT"] = False
-        settings["PODCAST_FEED_PATH"] = PODCAST_FEED_PATH
         settings["SITEURL"] = SITEURL
         settings["PATH"] = PATH
         settings["FEED_DOMAIN"] = SITEURL
+
+        settings["PODCAST_FEED_PATH"] = PODCAST_FEED_PATH
+        settings["PODCAST_FEED_OWNER_NAME"] = PODCAST_FEED_OWNER_NAME
+        settings["PODCAST_FEED_OWNER_EMAIL"] = PODCAST_FEED_OWNER_EMAIL
+        settings["PODCAST_FEED_CATEGORY"] = ["Leisure", "Hobbies"]
+        settings["PODCAST_FEED_IMAGE"] = SITEURL + "/images/common/artwork.jpg"
+        settings["PODCAST_FEED_AUTHOR"] = PODCAST_FEED_AUTHOR
 
         self.settings = get_settings(**settings)
 
@@ -113,9 +119,9 @@ class TestiTunesWriter(unittest.TestCase):
     def tearDown(self):
         rmtree(self.temp_cache)
 
-    def test_generate_output(self):
+    def get_generator(self):
         category = Category("misc", self.settings)
-        podcast_article = get_article(
+        podcast_articles = [get_article(
             "podcast title",
             "podcast cocntent",
             podcast="http://example.com/audio/test.mp3",
@@ -123,12 +129,19 @@ class TestiTunesWriter(unittest.TestCase):
             date=datetime.datetime.now(),
             length="120",
             duration="120",
-        )
+        ),
+        get_article(
+            "podcast title",
+            "podcast cocntent",
+            podcast="http://example.com/audio/test.mp3",
+            category=category,
+            date=datetime.datetime.now(),
+            length="120",
+            duration="120",
+        )]
 
         context = get_context(**self.settings)
-        context["articles"] = [
-            podcast_article,
-        ]
+        context["articles"] = podcast_articles
 
         generator = PodcastFeedGenerator(
             context=context,
@@ -138,30 +151,46 @@ class TestiTunesWriter(unittest.TestCase):
             output_path=self.temp_output,
         )
         generator.generate_context()
+        return generator
+
+
+    def test_generate_output_article(self):
+        generator = self.get_generator()
 
         writer = iTunesWriter(self.temp_output, settings=self.settings)
         generator.generate_output(writer)
 
         output_path = os.path.join(self.temp_output, self.settings["PODCAST_FEED_PATH"])
+        self.assertTrue(os.path.exists(output_path))
 
+        with open(output_path) as output_file:
+            output_containts = output_file.read()
+            assert(output_containts.count("<title>podcast title</title>"))
+            assert(output_containts.count('type="audio/mpeg" url="http://example.com/audio/test.mp3"') == 2)
+            assert(output_containts.count("<link>http://example.com//podcast-title.html</link>") == 2)
+            assert(output_containts.count("<guid>http://example.com//podcast-title.html</guid>") == 2)
+            self.assertIn('length="960975"', output_containts)
+            self.assertIn("<itunes:duration>60</itunes:duration>", output_containts)
+
+    def test_generate_output_podcast(self):
+        generator = self.get_generator()
+
+        writer = iTunesWriter(self.temp_output, settings=self.settings)
+        generator.generate_output(writer)
+
+        output_path = os.path.join(self.temp_output, self.settings["PODCAST_FEED_PATH"])
         self.assertTrue(os.path.exists(output_path))
 
         with open(output_path) as output_file:
             output_containts = output_file.read()
             self.assertIn('<?xml version="1.0" encoding="utf-8"?>', output_containts)
-            # self.assertIn(
-            #     '<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">',
-            #     output_containts,
-            # )
-            self.assertIn("<title>A Pelican Blog</title>", output_containts)
-            self.assertIn("<title>podcast title</title>", output_containts)
-            # self.assertIn(
-            #     '<enclosure type="audio/mpeg" url="aaa.mp3"></enclosure>',
-            #     output_containts,
-            # )
             self.assertIn(
-                "<link>http://example.com//podcast-title.html</link>", output_containts
+                '<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">',
+                output_containts,
             )
-            self.assertIn(
-                "<guid>http://example.com//podcast-title.html</guid>", output_containts
-            )
+            self.assertIn("Leisure", output_containts)
+            self.assertIn("Hobbies", output_containts)            
+            self.assertIn('<itunes:name>OWNER STRING</itunes:name>', output_containts)
+            self.assertIn('<itunes:email>example@example.com</itunes:email>', output_containts)
+            self.assertIn('<itunes:owner><itunes:name>OWNER STRING</itunes:name><itunes:email>example@example.com</itunes:email></itunes:owner>', output_containts)
+            assert(output_containts.count("<title>A Pelican Blog</title>") == 1)
