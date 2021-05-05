@@ -201,7 +201,7 @@ class TestiTunesWriter(unittest.TestCase):
             output_containts = output_file.read()
             self.assertIn('<?xml version="1.0" encoding="utf-8"?>', output_containts)
             self.assertIn(
-                '<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">', # NOQA E501
+                '<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">',  # NOQA E501
                 output_containts,
             )
             self.assertIn("Leisure", output_containts)
@@ -211,7 +211,7 @@ class TestiTunesWriter(unittest.TestCase):
                 "<itunes:email>example@example.com</itunes:email>", output_containts
             )
             self.assertIn(
-                "<itunes:owner><itunes:name>OWNER STRING</itunes:name><itunes:email>example@example.com</itunes:email></itunes:owner>", # NOQA E501
+                "<itunes:owner><itunes:name>OWNER STRING</itunes:name><itunes:email>example@example.com</itunes:email></itunes:owner>",  # NOQA E501
                 output_containts,
             )
             assert output_containts.count("<title>A Pelican Blog</title>") == 1
