@@ -113,24 +113,30 @@ class PodcastFeed(Rss201rev2Feed):
         #   <itunes:category text="Gadgets"/>
         #  </itunes:category>
         if "PODCAST_FEED_CATEGORY" in self.settings:
+
             def category_element(categories, is_top=True):
                 if isinstance(categories, str):
-                    return handler.addQuickElement("itunes:category", attrs={"text": categories})
+                    return handler.addQuickElement(
+                        "itunes:category", attrs={"text": categories}
+                    )
                 elif isinstance(categories, Iterable):
                     if len(categories) <= 0:
                         return
                     category = categories.pop(0)
                     if is_top and len(categories) > 0:
-                        handler.startElement("itunes:category", attrs={"text": category})
+                        handler.startElement(
+                            "itunes:category", attrs={"text": category}
+                        )
                         _ = category_element(categories, is_top=False)
                         handler.endElement("itunes:category")
                     else:
-                        handler.addQuickElement("itunes:category", attrs={"text": category})
+                        handler.addQuickElement(
+                            "itunes:category", attrs={"text": category}
+                        )
                         _ = category_element(categories, is_top=False)
 
             categories = self.settings["PODCAST_FEED_CATEGORY"]
             category_element(categories)
-
 
     def add_item_elements(self, handler, item):
         """Adds a new element to the iTunes feed, using information from
@@ -199,7 +205,10 @@ class iTunesWriter(Writer):
                 "link",
                 lambda calee, item, article: "{0}/{1}".format(calee.site_url, item.url),
             ],
-            ["title", lambda calee, item, article: Markup(item.title).striptags(),],  # NOQA E231
+            [
+                "title",
+                lambda calee, item, article: Markup(item.title).striptags(),
+            ],  # NOQA E231
             [
                 "itunes:summary",
                 lambda calee, item, article: item.description
