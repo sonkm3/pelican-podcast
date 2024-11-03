@@ -7,7 +7,7 @@ import os
 
 from feedgenerator import Rss201rev2Feed
 from feedgenerator.django.utils.feedgenerator import rfc2822_date
-from jinja2 import Markup
+from markupsafe import Markup
 import mutagen
 import six
 
