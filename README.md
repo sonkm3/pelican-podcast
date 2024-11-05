@@ -26,6 +26,13 @@ This plugin can be installed via:
 
     python -m pip install pelican-podcast
 
+Then add it to your `pelicanconf.py` file:
+
+    PLUGINS = [
+        ...
+        'pelican.plugins.pelican_podcast',
+    ]
+
 Usage
 -----
 
